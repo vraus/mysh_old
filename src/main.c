@@ -16,7 +16,7 @@
 #define CYAN              "\x1b[36m"
 #define WHITE             "\x1b[37m"
 
-#define COMMAND_LENGTH 1024
+#define COMMAND_LENGTH 2048
 
 int getcommand(char* str, int size, FILE* stream){
     int i = 0;
