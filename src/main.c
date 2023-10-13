@@ -5,59 +5,59 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-
-#define RESET             "\x1b[0m"
-#define BLACK             "\x1b[30m"
-#define RED               "\x1b[31m"
-#define GREEN             "\x1b[32m"
-#define YELLOW            "\x1b[33m"
-#define BLUE              "\x1b[34m"
-#define MAGENTA           "\x1b[35m"
-#define CYAN              "\x1b[36m"
-#define WHITE             "\x1b[37m"
+#define RESET "\x1b[0m"
+#define BLACK "\x1b[30m"
+#define RED "\x1b[31m"
+#define GREEN "\x1b[32m"
+#define YELLOW "\x1b[33m"
+#define BLUE "\x1b[34m"
+#define MAGENTA "\x1b[35m"
+#define CYAN "\x1b[36m"
+#define WHITE "\x1b[37m"
 
 #define COMMAND_LENGTH 2048
 
-int getcommand(char* str, int size, FILE* stream){
-    int i = 0;
-    int ch;
+int getcommand(char *str)
+{
+    int i = 0, ch;
 
-    while (i < size - 1){
-        ch = getchar();
+    while ((ch = getchar()) != EOF)
+    {
+        if (ferror(stdin))
+        {
+            perror("Erreur de lecture");
+            break;
+        }
 
-        if (ch == EOF || ch == '\n') break;
+        if (ch == '\n')
+        {
+            break;
+        }
 
-        str[i++] = (char) ch;
+        str[i++] = (char)ch;
     }
-
     str[i] = '\0';
     return i;
 }
 
 int main()
 {
-    char command[COMMAND_LENGTH];
-    char *args[COMMAND_LENGTH];
+    char command[COMMAND_LENGTH], *args[COMMAND_LENGTH];
+    int wstatus;
 
     for (;;)
     {
         char cwd[1024];
         getcwd(cwd, sizeof(cwd));
 
-        char* project = strstr(cwd, "/mysh");
-        if(project != NULL) printf(BLUE " %s > " RESET, project);
-        else printf(GREEN " > ");
+        char *project = strstr(cwd, "/mysh");
+        if (project != NULL)
+            printf(BLUE " %s > " RESET, project);
+        else
+            printf(GREEN " > ");
 
         // Lire la commande de l'utilisateur
-        // if (fgets(command, sizeof(command), stdin) == NULL)
-        // {
-        //     break;
-        // }
-
-        getcommand(command, sizeof(command), stdin);
-
-        // Supprimer le saut de ligne final
-        // command[strcspn(command, "\n")] = '\0';
+        getcommand(command);
 
         if (strcmp(command, "exit") == 0)
         {
@@ -93,7 +93,11 @@ int main()
         else
         { // Code du parent
             // Attendre la fin du processus enfant
-            wait(NULL);
+            if (waitpid(-1, &wstatus, WEXITSTATUS(wstatus)) < 0)
+            {
+                perror("Error waitpid");
+                exit(1);
+            }
         }
     }
     return 0;
