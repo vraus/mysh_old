@@ -18,7 +18,21 @@
 
 #define COMMAND_LENGTH 1024
 
-char* getcmd(char* buffer, size_t nBufferSize);
+int getcommand(char* str, int size, FILE* stream){
+    int i = 0;
+    int ch;
+
+    while (i < size - 1){
+        ch = getchar();
+
+        if (ch == EOF || ch == '\n') break;
+
+        str[i++] = (char) ch;
+    }
+
+    str[i] = '\0';
+    return i;
+}
 
 int main()
 {
@@ -35,13 +49,15 @@ int main()
         else printf(GREEN " > ");
 
         // Lire la commande de l'utilisateur
-        if (fgets(command, sizeof(command), stdin) == NULL)
-        {
-            break;
-        }
+        // if (fgets(command, sizeof(command), stdin) == NULL)
+        // {
+        //     break;
+        // }
+
+        getcommand(command, sizeof(command), stdin);
 
         // Supprimer le saut de ligne final
-        command[strcspn(command, "\n")] = '\0';
+        // command[strcspn(command, "\n")] = '\0';
 
         if (strcmp(command, "exit") == 0)
         {
