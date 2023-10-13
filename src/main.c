@@ -31,7 +31,6 @@ int main()
         char* project = strstr(cwd, "/mysh");
         if(project != NULL) printf(BLUE " %s > " RESET, project);
         else printf(GREEN " > ");
-        fflush(stdout);
 
         // Lire la commande de l'utilisateur
         if (fgets(command, sizeof(command), stdin) == NULL)
