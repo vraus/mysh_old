@@ -18,6 +18,8 @@
 
 #define COMMAND_LENGTH 1024
 
+char* getcmd(char* buffer, size_t nBufferSize);
+
 int main()
 {
     char command[COMMAND_LENGTH];
