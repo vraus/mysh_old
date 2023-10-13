@@ -5,6 +5,17 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+
+#define RESET             "\x1b[0m"
+#define BLACK             "\x1b[30m"
+#define RED               "\x1b[31m"
+#define GREEN             "\x1b[32m"
+#define YELLOW            "\x1b[33m"
+#define BLUE              "\x1b[34m"
+#define MAGENTA           "\x1b[35m"
+#define CYAN              "\x1b[36m"
+#define WHITE             "\x1b[37m"
+
 #define COMMAND_LENGTH 1024
 
 int main()
@@ -14,7 +25,12 @@ int main()
 
     for (;;)
     {
-        printf("Mini Shell > ");
+        char cwd[1024];
+        getcwd(cwd, sizeof(cwd));
+
+        char* project = strstr(cwd, "/mysh");
+        if(project != NULL) printf(BLUE " %s > " RESET, project);
+        else printf(GREEN " > ");
         fflush(stdout);
 
         // Lire la commande de l'utilisateur
@@ -28,7 +44,6 @@ int main()
 
         if (strcmp(command, "exit") == 0)
         {
-            printf("Au revoir !\n");
             break; // Quitter le mini-shell
         }
 
