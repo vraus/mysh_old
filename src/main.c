@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <ctype.h>
 
 #define RESET "\x1b[0m"
 #define BLACK "\x1b[30m"
@@ -17,18 +18,12 @@
 
 #define COMMAND_LENGTH 2048
 
-int getcommand(char *str)
+void getcommand(char *str)
 {
     int i = 0, ch;
 
     while ((ch = getchar()) != EOF)
     {
-        if (ferror(stdin))
-        {
-            perror("Erreur de lecture");
-            break;
-        }
-
         if (ch == '\n')
         {
             break;
@@ -36,8 +31,30 @@ int getcommand(char *str)
 
         str[i++] = (char)ch;
     }
+
+    if (ferror(stdin))
+    {
+        perror("Erreur de lecture");
+        exit(EXIT_FAILURE);
+    }
     str[i] = '\0';
-    return i;
+}
+
+void tokenize(char *str, char *args[])
+{
+    char *s;
+    int i = 0;
+    for (s = str; isspace(*s); s++)
+        ;
+    for (i = 0; *s; i++)
+    {
+        args[i] = s;
+        while (!isspace(*s))
+            s++;
+        *s++ = '\0';
+        while (isspace(*s))
+            s++;
+    }
 }
 
 int main()
@@ -58,21 +75,11 @@ int main()
 
         // Lire la commande de l'utilisateur
         getcommand(command);
-
         if (strcmp(command, "exit") == 0)
         {
             break; // Quitter le mini-shell
         }
-
-        // Diviser la commande en tokens
-        char *token = strtok(command, " ");
-        int i = 0;
-        while (token != NULL)
-        {
-            args[i++] = token;
-            token = strtok(NULL, " ");
-        }
-        args[i] = NULL; // Dernier élément doit être NULL pour execvp
+        tokenize(command, args);
 
         // Créer un processus enfant
         pid_t pid = fork();
