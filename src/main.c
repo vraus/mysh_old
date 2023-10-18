@@ -44,16 +44,16 @@ void tokenize(char *str, char *args[])
 {
     char *s;
     int i = 0;
-    for (s = str; isspace(*s); s++)
+    for (s = str; isspace(s[i]); s++)
         ;
-    for (i = 0; *s; i++)
+    for (i = 0; s[i]; i++)
     {
         args[i] = s;
         while (!isspace(*s) && *s != ';')
             s++;
         if (*s == ';'){
             *s++ = '\0'; // Marque la fin de ligne
-            args[++i] = s; // Passage à la prochaine commande
+            args[i] = s; // Passage à la prochaine commande
         }
         else {
             *s++ = '\0';
@@ -97,11 +97,20 @@ int main()
         else if (pid == 0)
         { // Code du fils
             // Exécuter la commande
+            for(int i = 0; args[i]; i++){
+                if (strcmp(args[i], ";") == 0){
+                    printf("%s\n", args[i]);
+                } else {
+                    printf("%s\n", args[i]);
+                }
+            }
+            printf("args[0] := %s\n", args[0]);
             if (execvp(args[0], args) == -1)
             {
                 perror("execvp");
                 exit(1);
             }
+            
         }
         else
         { // Code du parent
@@ -113,5 +122,6 @@ int main()
             }
         }
     }
+
     return 0;
 }
