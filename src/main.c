@@ -49,10 +49,16 @@ void tokenize(char *str, char *args[])
     for (i = 0; *s; i++)
     {
         args[i] = s;
-        while (!isspace(*s))
+        while (!isspace(*s) && *s != ';')
             s++;
-        *s++ = '\0';
-        while (isspace(*s))
+        if (*s == ';'){
+            *s++ = '\0'; // Marque la fin de ligne
+            args[++i] = s; // Passage à la prochaine commande
+        }
+        else {
+            *s++ = '\0';
+        }
+        while (isspace(*s) || *s == ';')
             s++;
     }
 }
