@@ -18,6 +18,10 @@
 
 #define COMMAND_LENGTH 2048
 
+/**
+ * @brief Récupère la commande saisie par l'utilisateur
+ * @param str : la commande
+ */
 void getcommand(char *str)
 {
     int i = 0, ch;
@@ -40,6 +44,12 @@ void getcommand(char *str)
     str[i] = '\0';
 }
 
+/**
+ * @brief Permet de fragmenter la commande saisie par l'utilisateur en plusieur chaine de charactère
+ * qui sont récupérer dans un tableau de chaine de caractère
+ * @param str : la commande
+ * @param args : tableau contenant les mots de la commande
+ */
 void tokenize(char *str, char *args[])
 {
     char *s;
@@ -54,6 +64,68 @@ void tokenize(char *str, char *args[])
         *s++ = '\0';
         while (isspace(*s))
             s++;
+    }
+}
+
+/**
+ * @brief Permet de savoir quelle option ou commande(myls)
+ *  a été saisie par l'utilisateur en modifiant la variable correspondante
+ * @param args : tableau contenant les mots de la commande
+ * @param hasA : variable lié à l'option -a
+ * @param hasR : variable lié à l'option -R
+ * @param hasMyLs : variable lié à la commande myls
+ */
+void hasOption(char **args, int *hasA, int *hasR, int *hasMyLs)
+{
+    for (int i = 0; args[i] != NULL; i++)
+    {
+        if (strcmp(args[i], "-a") == 0)
+        {
+            *hasA = 1;
+        }
+        else if (strcmp(args[i], "-R") == 0)
+        {
+            *hasR = 1;
+        }
+        else if (strcmp(args[i], "myls") == 0)
+        {
+            *hasMyLs = 1;
+        }
+    }
+}
+
+/**
+ * @brief si la commande saisi par l'utilisateur est myls, l'exécute si oui
+ * @param hasMyLs: variable lié à la commande myls
+ * @param hasA : variable lié à l'option -a
+ * @param hasR : variable lié à l'option -R
+ */
+void is_myls(int hasMyLs, int hasA, int hasR)
+{
+    if (hasMyLs == 1)
+    {
+        char *myls_args[4];
+        myls_args[0] = "./myls";
+
+        int arg_count = 1;
+
+        if (hasA)
+        {
+            myls_args[arg_count++] = "-a";
+        }
+
+        if (hasR)
+        {
+            myls_args[arg_count++] = "-R";
+        }
+
+        myls_args[arg_count] = NULL;
+
+        if (execvp(myls_args[0], myls_args) == -1)
+        {
+            perror("execvp");
+            exit(1);
+        }
     }
 }
 
@@ -74,12 +146,14 @@ int main()
             printf(GREEN " > ");
 
         // Lire la commande de l'utilisateur
+        int hasA = 0, hasR = 0, hasMyLs = 0;
         getcommand(command);
         if (strcmp(command, "exit") == 0)
         {
             break; // Quitter le mini-shell
         }
         tokenize(command, args);
+        hasOption(args, &hasA, &hasR, &hasMyLs);
 
         // Créer un processus enfant
         pid_t pid = fork();
@@ -90,7 +164,9 @@ int main()
         }
         else if (pid == 0)
         { // Code du fils
-            // Exécuter la commande
+
+            is_myls(hasMyLs, hasA, hasR);
+
             if (execvp(args[0], args) == -1)
             {
                 perror("execvp");
