@@ -1,23 +1,5 @@
-#include <dirent.h>
-#include <errno.h>
-#include <grp.h>
-#include <pwd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
-#include <ctype.h>
+#include "myls.h"
 
-/**
- * @brief permet de comparer deux éléments
- * utile pour trier par ordre alphabétique les fichiers et dossiers
- * @param a : un string
- * @param b : un string
- * @return 0 si a et b equal, negatif si a < b et positif si a > b
- */
 int compare(const void *a, const void *b)
 {
   const char *str1 = *(const char **)a;
@@ -52,12 +34,6 @@ int compare(const void *a, const void *b)
   return strcmp(str1, str2);
 }
 
-/**
- * @brief de tranformer l'ID de permission que nous donne la struct stat
- * en chaine de caractère (rwx)
- * @param mode: les autorisations d'accès au fichier
- * @return la chaine de caractère de permission (rwx)
- */
 const char *get_permissions_string(mode_t mode)
 {
   static char perms[10]; // Utilisation d'un tableau local au lieu d'un tableau statique
@@ -76,12 +52,6 @@ const char *get_permissions_string(mode_t mode)
   return perms;
 }
 
-/**
- * @brief Permet d'avoir l'affichage ls -l
- * @param totalBlocks : la taille total en block de tout les fichiers et dossiers du répertoire courant
- * @param num_files : le nombre de fichier dans le répertoire courant
- * @param file_names: tableau de chaine de caractère contenant tout les noms des es fichiers et dossiers du répertoire courant
- */
 void affiche(int totalBlocks, int num_files, char **file_names, struct stat st)
 {
   static const char *noms_mois[] = {"jan", "feb", "mar", "apr", "may", "jun",
@@ -118,14 +88,6 @@ void affiche(int totalBlocks, int num_files, char **file_names, struct stat st)
   }
 }
 
-/**
- * @brief fonction global permet d'ouvrir le dossier courant et où sont utilisé les fonctions précédentes
- * @param cwd : le chemin du répertoire courant
- * @param max_files : taille max du tableau file_names
- * @param num_files : le nombre de fichier dans le répertoire courant
- * @param file_names : tableau de chaine de caractère contenant tout les noms des es fichiers et dossiers du répertoire courant
- *
- */
 void files(char *cwd, int *num_files, int *max_files, char **file_names, int hasA, int hasR)
 {
   struct dirent *entry;
@@ -194,13 +156,6 @@ void files(char *cwd, int *num_files, int *max_files, char **file_names, int has
   free(cwd);
 }
 
-/**
- * @brief Permet de savoir quelles options ont été saisie par l'utilisateur en modifiant la variable correspondante
- * @param argc : le nombre d'élément présent dans argv (param main)
- * @param argv : le tableau où ont été récupéré les options potentiellement saisie par l'utilisateur(param main)
- * @param hasA : variable lié à l'option -a
- * @param hasR : variable lié à l'option -R
- */
 void hasOption(int argc, char **argv, int *hasA, int *hasR)
 {
   for (int i = 1; i < argc; i++)
@@ -216,7 +171,7 @@ void hasOption(int argc, char **argv, int *hasA, int *hasR)
   }
 }
 
-int main(int argc, char *argv[])
+int exec_myls(int argc, char *argv[])
 {
   char **file_names = NULL, *cwd = (char *)malloc(1024);
   int num_files = 0, max_files = 10, hasA = 0, hasR = 0;

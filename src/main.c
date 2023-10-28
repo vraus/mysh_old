@@ -6,6 +6,8 @@
 #include <sys/wait.h>
 #include <ctype.h>
 
+#include "myls.h"
+
 #define RESET "\x1b[0m"
 #define BLACK "\x1b[30m"
 #define RED "\x1b[31m"
@@ -103,7 +105,7 @@ void hasOption(char **args, int *hasA, int *hasR, int *hasMyLs)
 }
 
 /**
- * @brief si la commande saisi par l'utilisateur est myls, l'exécute si oui
+ * @brief si la commande saisi par l'utilisateur est myls, l'exécute
  * @param hasMyLs: variable lié à la commande myls
  * @param hasA : variable lié à l'option -a
  * @param hasR : variable lié à l'option -R
