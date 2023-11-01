@@ -1,4 +1,4 @@
-#include "myls.h"
+#include "../include/myls.h"
 
 int compare(const void *a, const void *b)
 {
@@ -171,7 +171,7 @@ void hasOption(int argc, char **argv, int *hasA, int *hasR)
   }
 }
 
-int exec_myls(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   char **file_names = NULL, *cwd = (char *)malloc(1024);
   int num_files = 0, max_files = 10, hasA = 0, hasR = 0;

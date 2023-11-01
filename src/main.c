@@ -5,8 +5,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <ctype.h>
-
-#include "myls.h"
+#include <getopt.h>
 
 #define RESET "\x1b[0m"
 #define BLACK "\x1b[30m"
@@ -54,95 +53,85 @@ void getcommand(char *str)
  */
 void tokenize(char *str, char *args[])
 {
-    char *s;
-    int i = 0;
-    for (s = str; isspace(s[i]); s++)
-        ;
-    for (i = 0; s[i]; i++)
+    int len = strlen(str), j, i = 0;
+    for (j = 0; j < len; j++)
     {
-        args[i] = s;
-        while (!isspace(*s) && *s != ';')
-            s++;
-        if (*s == ';')
+        if (str[j] == ' ' || str[j] == '\t')
         {
-            *s++ = '\0'; // Marque la fin de ligne
-            args[i] = s; // Passage à la prochaine commande
+            str[j] = '\0'; // Remplace les espaces et les tabulations par des terminaisons nulles
         }
-        else
+        else if (j == 0 || str[j - 1] == '\0')
         {
-            *s++ = '\0';
+            args[i] = &str[j]; // Pointe vers le début de chaque argument
+            i++;
         }
-        while (isspace(*s) || *s == ';')
-            s++;
     }
+    args[i] = NULL;
 }
 
 /**
- * @brief Permet de savoir quelle option ou commande(myls)
- *  a été saisie par l'utilisateur en modifiant la variable correspondante
+ * @brief Permet de savoir quelle option a été saisie par l'utilisateur en modifiant la variable correspondante
  * @param args : tableau contenant les mots de la commande
- * @param hasA : variable lié à l'option -a
- * @param hasR : variable lié à l'option -R
- * @param hasMyLs : variable lié à la commande myls
  */
-void hasOption(char **args, int *hasA, int *hasR, int *hasMyLs)
+void hasOption(char **args, int *mask)
 {
-    for (int i = 0; args[i] != NULL; i++)
+    *mask = 0x000;
+    int opt;
+
+    while ((opt = getopt(1, args, "Ra")) != -1)
     {
-        if (strcmp(args[i], "-a") == 0)
+        switch (opt)
         {
-            *hasA = 1;
-        }
-        else if (strcmp(args[i], "-R") == 0)
-        {
-            *hasR = 1;
-        }
-        else if (strcmp(args[i], "myls") == 0)
-        {
-            *hasMyLs = 1;
+        case 'a':
+            printf("Used parameter a.\n");
+            *mask |= (1 << 0);
+            break;
+        case 'R':
+            printf("Used parameter n.\n");
+            *mask |= (1 << 1);
+            break;
+
+        default:
+            printf("Invalid option.\n");
+            // handle_bad_usage(args[0]);
         }
     }
 }
 
 /**
  * @brief si la commande saisi par l'utilisateur est myls, l'exécute
- * @param hasMyLs: variable lié à la commande myls
- * @param hasA : variable lié à l'option -a
- * @param hasR : variable lié à l'option -R
+ * @param mask : permet de savoir si myls a été saisie, et qu'elle option à été saisie
  */
-void is_myls(int hasMyLs, int hasA, int hasR)
+void is_myls(int mask)
 {
-    if (hasMyLs == 1)
+    char *myls_args[4];
+    myls_args[0] = "./option/myls";
+
+    int arg_count = 1;
+
+    if (mask & (1 << 1))
     {
-        char *myls_args[4];
-        myls_args[0] = "./myls";
+        myls_args[arg_count++] = "-a";
+    }
 
-        int arg_count = 1;
+    if (mask & (1 << 2))
+    {
+        myls_args[arg_count++] = "-R";
+    }
 
-        if (hasA)
-        {
-            myls_args[arg_count++] = "-a";
-        }
+    myls_args[arg_count] = NULL;
 
-        if (hasR)
-        {
-            myls_args[arg_count++] = "-R";
-        }
-
-        myls_args[arg_count] = NULL;
-
-        if (execvp(myls_args[0], myls_args) == -1)
-        {
-            perror("execvp");
-            exit(1);
-        }
+    if (execvp(myls_args[0], myls_args) == -1)
+    {
+        perror("execvp");
+        exit(1);
     }
 }
 
 int main()
 {
     char command[COMMAND_LENGTH], *args[COMMAND_LENGTH];
-    int wstatus;
+    int wstatus, mask;
 
     for (;;)
     {
@@ -156,37 +145,38 @@ int main()
             printf(GREEN " > ");
 
         // Lire la commande de l'utilisateur
-        int hasA = 0, hasR = 0, hasMyLs = 0;
+        // int hasA = 0, hasR = 0, hasMyLs = 0;
         getcommand(command);
         if (strcmp(command, "exit") == 0)
         {
             break; // Quitter le mini-shell
         }
         tokenize(command, args);
-        hasOption(args, &hasA, &hasR, &hasMyLs);
+        hasOption(args, &mask);
 
-        // Créer un processus enfant
         pid_t pid = fork();
         if (pid == -1)
         {
             perror("fork");
             exit(1);
         }
-        else if (pid == 0)
-        { // Code du fils
-
-            is_myls(hasMyLs, hasA, hasR);
-
-            if (execvp(args[0], args) == -1)
+        if (pid == 0)
+        {
+            // Code du fils
+            if (strcmp(args[0], "myls") == 0)
+            {
+                is_myls(mask);
+            }
+            else if (execvp(args[0], args) == -1)
             {
                 perror("execvp");
                 exit(1);
             }
         }
         else
-        { // Code du parent
-            // Attendre la fin du processus enfant
-            if (waitpid(-1, &wstatus, WEXITSTATUS(wstatus)) < 0)
+        {
+            // Code du parent
+            if (waitpid(pid, &wstatus, 0) < 0)
             {
                 perror("Error waitpid");
                 exit(1);
