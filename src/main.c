@@ -51,12 +51,12 @@ void getcommand(char *str)
  * @param str : la commande
  * @param args : tableau contenant les mots de la commande
  */
-void tokenize(char *str, char *args[])
+void tokenize(char *str, char *args[], char separator, int *command_cound)
 {
     int len = strlen(str), j, i = 0;
     for (j = 0; j < len; j++)
     {
-        if (str[j] == ' ' || str[j] == '\t')
+        if (str[j] == separator || str[j] == '\t')
         {
             str[j] = '\0'; // Remplace les espaces et les tabulations par des terminaisons nulles
         }
@@ -66,12 +66,17 @@ void tokenize(char *str, char *args[])
             i++;
         }
     }
+    if (separator == ';')
+    {
+        *command_cound = i;
+    }
     args[i] = NULL;
 }
 
 /**
  * @brief Permet de savoir quelle option a été saisie par l'utilisateur en modifiant la variable correspondante
  * @param args : tableau contenant les mots de la commande
+ * @param mask : permet de savoir qu'elle option du myls à été saisie
  */
 void hasOption(char **args, int *mask)
 {
@@ -100,7 +105,7 @@ void hasOption(char **args, int *mask)
 
 /**
  * @brief si la commande saisi par l'utilisateur est myls, l'exécute
- * @param mask : permet de savoir si myls a été saisie, et qu'elle option à été saisie
+ * @param mask : permet de savoir qu'elle option du myls à été saisie
  */
 void is_myls(int mask)
 {
@@ -128,10 +133,29 @@ void is_myls(int mask)
     }
 }
 
+/**
+ * @brief c'est ici que les execvp sont fait
+ * @param mask : permet de savoir qu'elle option du myls à été saisie
+ * @param args : tableau contenant les mots de la commande
+ */
+void execute_command(int mask, char *args[])
+{
+    if (strcmp(args[0], "myls") == 0)
+    {
+        hasOption(args, &mask);
+        is_myls(mask);
+    }
+    else if (execvp(args[0], args) == -1)
+    {
+        perror("Erreur d'exécution de la commande");
+        exit(EXIT_FAILURE);
+    }
+}
+
 int main()
 {
-    char command[COMMAND_LENGTH], *args[COMMAND_LENGTH];
-    int wstatus, mask;
+    char input[COMMAND_LENGTH], *command[COMMAND_LENGTH], *args[20];
+    int wstatus, mask, command_count = 0;
 
     for (;;)
     {
@@ -146,43 +170,40 @@ int main()
 
         // Lire la commande de l'utilisateur
         // int hasA = 0, hasR = 0, hasMyLs = 0;
-        getcommand(command);
-        if (strcmp(command, "exit") == 0)
+        getcommand(input);
+        if (strcmp(input, "exit") == 0)
         {
             break; // Quitter le mini-shell
         }
-        tokenize(command, args);
-        hasOption(args, &mask);
 
-        pid_t pid = fork();
-        if (pid == -1)
+        tokenize(input, command, ';', &command_count);
+
+        pid_t child_pids[command_count];
+
+        for (int i = 0; i < command_count; i++)
         {
-            perror("fork");
-            exit(1);
-        }
-        if (pid == 0)
-        {
-            // Code du fils
-            if (strcmp(args[0], "myls") == 0)
+            child_pids[i] = fork();
+            if (child_pids[i] == -1)
             {
-                is_myls(mask);
-            }
-            else if (execvp(args[0], args) == -1)
-            {
-                perror("execvp");
+                perror("fork");
                 exit(1);
             }
+            if (child_pids[i] == 0)
+            {
+                int arg_count = 0;
+                tokenize(command[i], args, ' ', &arg_count);
+                execute_command(mask, args);
+            }
         }
-        else
+
+        for (int i = 0; i < command_count; i++)
         {
-            // Code du parent
-            if (waitpid(pid, &wstatus, 0) < 0)
+            if (waitpid(child_pids[i], &wstatus, 0) < 0)
             {
                 perror("Error waitpid");
                 exit(1);
             }
         }
     }
-
     return 0;
 }
