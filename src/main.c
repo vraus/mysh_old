@@ -20,8 +20,8 @@
 #define COMMAND_LENGTH 2048
 
 /**
- * @brief Récupère la commande saisie par l'utilisateur
- * @param str : la commande
+ * @brief `void` Récupère la commande saisie par l'utilisateur
+ * @param str `char *`la commande
  */
 void getcommand(char *str)
 {
@@ -46,10 +46,10 @@ void getcommand(char *str)
 }
 
 /**
- * @brief Permet de fragmenter la commande saisie par l'utilisateur en plusieur chaine de charactère
+ * @brief `void` Permet de fragmenter la commande saisie par l'utilisateur en plusieur chaine de charactère
  * qui sont récupérer dans un tableau de chaine de caractère
- * @param str : la commande
- * @param args : tableau contenant les mots de la commande
+ * @param str `char *` la commande
+ * @param args `char *` tableau contenant les mots de la commande
  */
 void tokenize(char *str, char *args[], char separator, int *command_cound)
 {
@@ -74,13 +74,12 @@ void tokenize(char *str, char *args[], char separator, int *command_cound)
 }
 
 /**
- * @brief Permet de savoir quelle option a été saisie par l'utilisateur en modifiant la variable correspondante
- * @param args : tableau contenant les mots de la commande
- * @param mask : permet de savoir qu'elle option du myls à été saisie
+ * @brief `void` Permet de savoir quelle option a été saisie par l'utilisateur en modifiant la variable correspondante
+ * @param args `char **` tableau contenant les mots de la commande
+ * @param mask `int *` permet de savoir qu'elle option du myls à été saisie
  */
 void hasOption(char **args, int *mask)
 {
-    *mask = 0x000;
     int opt;
 
     while ((opt = getopt(1, args, "Ra")) != -1)
@@ -98,28 +97,28 @@ void hasOption(char **args, int *mask)
 
         default:
             printf("Invalid option.\n");
-            // handle_bad_usage(args[0]);
+            break;
         }
     }
 }
 
 /**
  * @brief si la commande saisi par l'utilisateur est myls, l'exécute
- * @param mask : permet de savoir qu'elle option du myls à été saisie
+ * @param mask `int *` permet de savoir qu'elle option du myls à été saisie
  */
-void is_myls(int mask)
+void is_myls(int *mask)
 {
     char *myls_args[4];
     myls_args[0] = "./option/myls";
 
     int arg_count = 1;
 
-    if (mask & (1 << 1))
+    if (*mask & (1 << 1))
     {
         myls_args[arg_count++] = "-a";
     }
 
-    if (mask & (1 << 2))
+    if (*mask & (1 << 2))
     {
         myls_args[arg_count++] = "-R";
     }
@@ -135,14 +134,14 @@ void is_myls(int mask)
 
 /**
  * @brief c'est ici que les execvp sont fait
- * @param mask : permet de savoir qu'elle option du myls à été saisie
- * @param args : tableau contenant les mots de la commande
+ * @param mask `int *` permet de savoir qu'elle option du myls à été saisie
+ * @param args `char **` tableau contenant les mots de la commande
  */
-void execute_command(int mask, char *args[])
+void execute_command(int *mask, char *args[])
 {
     if (strcmp(args[0], "myls") == 0)
     {
-        hasOption(args, &mask);
+        hasOption(args, mask);
         is_myls(mask);
     }
     else if (execvp(args[0], args) == -1)
@@ -155,12 +154,14 @@ void execute_command(int mask, char *args[])
 int main()
 {
     char input[COMMAND_LENGTH], *command[COMMAND_LENGTH], *args[20];
-    int wstatus, mask, command_count = 0;
+    int wstatus, command_count = 0;
+    int mask = 0x000;
 
     for (;;)
     {
         char cwd[1024];
         getcwd(cwd, sizeof(cwd));
+        mask = ~mask; // Remise à 0 du mask
 
         char *project = strstr(cwd, "/mysh");
         if (project != NULL)
@@ -192,7 +193,7 @@ int main()
             {
                 int arg_count = 0;
                 tokenize(command[i], args, ' ', &arg_count);
-                execute_command(mask, args);
+                execute_command(&mask, args);
             }
         }
 
