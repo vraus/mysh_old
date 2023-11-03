@@ -87,11 +87,9 @@ void hasOption(char **args, int *mask)
         switch (opt)
         {
         case 'a':
-            printf("Used parameter a.\n");
             *mask |= (1 << 0);
             break;
         case 'R':
-            printf("Used parameter n.\n");
             *mask |= (1 << 1);
             break;
 
@@ -103,7 +101,7 @@ void hasOption(char **args, int *mask)
 }
 
 /**
- * @brief si la commande saisi par l'utilisateur est myls, l'exécute
+ * @brief `void` si la commande saisi par l'utilisateur est myls, l'exécute
  * @param mask `int *` permet de savoir qu'elle option du myls à été saisie
  */
 void is_myls(int *mask)
