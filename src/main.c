@@ -87,20 +87,17 @@ void tokenize(char *str, char *commands[], int *command_count)
     int len = strlen(str), i = 0, j;
     for (j = 0; j < len; j++)
     {
-        if (str[j] == ';')
+        if (j + 1 < len && str[j] == '&')
         {
-            str[j] = '\0';
-        }
-        else if (j + 1 < len && str[j] == '&')
-        {
-            if (str[j + 1] == '&')
+            if (str[j - 1] != '&')
             {
                 str[j - 1] = '\0';
             }
-            else
-            {
-                handle_error_noexit("&&: tokenize");
-            }
+            handle_error_noexit("&&: tokenize");
+        }
+        if (str[j] == ';' || (str[j - 1] == '&' && str[j] != '&'))
+        {
+            str[j] = '\0';
         }
         else if (j == 0 || str[j - 1] == '\0')
         {
@@ -109,6 +106,7 @@ void tokenize(char *str, char *commands[], int *command_count)
         }
     }
     *command_count = i;
+    printf("c : %d\n", *command_count);
     commands[i] = NULL;
 }
 
@@ -220,6 +218,7 @@ int main()
 
         for (int i = 0; i < command_count; i++)
         {
+            printf("%s\n", command[i]);
             child_pids[i] = fork();
             if (child_pids[i] == -1)
             {
