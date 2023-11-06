@@ -19,6 +19,19 @@
 
 #define COMMAND_LENGTH 2048
 
+#define handle_error(msg, status) \
+    do                            \
+    {                             \
+        perror(msg);              \
+        exit(status);             \
+    } while (0)
+
+#define handle_error_noexit(msg) \
+    do                           \
+    {                            \
+        perror(msg);             \
+    } while (0)
+
 /**
  * @brief `void` Récupère la commande saisie par l'utilisateur
  * @param str `char *`la commande
@@ -78,12 +91,22 @@ void tokenize(char *str, char *commands[], int *command_count)
         {
             str[j] = '\0';
         }
-        else if ()
-            else if (j == 0 || str[j - 1] == '\0')
+        else if (j + 1 < len && str[j] == '&')
+        {
+            if (str[j + 1] == '&')
             {
-                commands[i] = &str[j]; // Pointe vers le début de chaque argument
-                i++;
+                str[j - 1] = '\0';
             }
+            else
+            {
+                handle_error_noexit("&&: tokenize");
+            }
+        }
+        else if (j == 0 || str[j - 1] == '\0')
+        {
+            commands[i] = &str[j]; // Pointe vers le début de chaque argument
+            i++;
+        }
     }
     *command_count = i;
     commands[i] = NULL;
