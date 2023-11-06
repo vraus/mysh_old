@@ -51,12 +51,12 @@ void getcommand(char *str)
  * @param str `char *` la commande
  * @param args `char *` tableau contenant les mots de la commande
  */
-void tokenize(char *str, char *args[], char separator, int *command_cound)
+void tokenize_space(char *str, char *args[])
 {
     int len = strlen(str), j, i = 0;
     for (j = 0; j < len; j++)
     {
-        if (str[j] == separator || str[j] == '\t')
+        if (str[j] == ' ' || str[j] == '\t')
         {
             str[j] = '\0'; // Remplace les espaces et les tabulations par des terminaisons nulles
         }
@@ -66,11 +66,27 @@ void tokenize(char *str, char *args[], char separator, int *command_cound)
             i++;
         }
     }
-    if (separator == ';')
-    {
-        *command_cound = i;
-    }
     args[i] = NULL;
+}
+
+void tokenize(char *str, char *commands[], int *command_count)
+{
+    int len = strlen(str), i = 0, j;
+    for (j = 0; j < len; j++)
+    {
+        if (str[j] == ';')
+        {
+            str[j] = '\0';
+        }
+        else if ()
+            else if (j == 0 || str[j - 1] == '\0')
+            {
+                commands[i] = &str[j]; // Pointe vers le début de chaque argument
+                i++;
+            }
+    }
+    *command_count = i;
+    commands[i] = NULL;
 }
 
 /**
@@ -175,7 +191,7 @@ int main()
             break; // Quitter le mini-shell
         }
 
-        tokenize(input, command, ';', &command_count);
+        tokenize(input, command, &command_count);
 
         pid_t child_pids[command_count];
 
@@ -189,14 +205,9 @@ int main()
             }
             if (child_pids[i] == 0)
             {
-                int arg_count = 0;
-                tokenize(command[i], args, ' ', &arg_count);
+                tokenize_space(command[i], args);
                 execute_command(&mask, args);
             }
-        }
-
-        for (int i = 0; i < command_count; i++)
-        {
             if (waitpid(child_pids[i], &wstatus, 0) < 0)
             {
                 perror("Error waitpid");
