@@ -148,12 +148,12 @@ void is_myls(int *mask)
 
     int arg_count = 1;
 
-    if (*mask & (1 << 1))
+    if (*mask & (1 << 0))
     {
         myls_args[arg_count++] = "-a";
     }
 
-    if (*mask & (1 << 2))
+    if (*mask & (1 << 1))
     {
         myls_args[arg_count++] = "-R";
     }
@@ -196,7 +196,7 @@ int main()
     {
         char cwd[1024];
         getcwd(cwd, sizeof(cwd));
-        mask = ~mask; // Remise à 0 du mask
+        mask = 0x000; // Remise à 0 du mask
 
         char *project = strstr(cwd, "/mysh");
         if (project != NULL)
