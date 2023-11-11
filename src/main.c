@@ -121,8 +121,10 @@ void hasOption(char **args, int *mask)
 
     printf("getting options\n");
 
+    // BUG: The getopt doesn't work and program never enter this while loop.
     while ((opt = getopt(1, args, "Ra")) != -1)
     {
+        printf("opt: %d\n", opt);
         switch (opt)
         {
         case 'a':
@@ -138,7 +140,7 @@ void hasOption(char **args, int *mask)
         }
     }
 
-    printf("final mask is %ls", mask);
+    printf("final mask is %d", *mask);
 }
 
 /**
@@ -151,6 +153,8 @@ void is_myls(int *mask)
     myls_args[0] = "./option/myls";
 
     int arg_count = 1;
+
+    printf("\nhere\n");
 
     if (*mask & (1 << 0))
     {
