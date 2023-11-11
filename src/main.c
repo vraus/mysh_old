@@ -113,11 +113,13 @@ void tokenize(char *str, char *commands[], int *command_count)
 /**
  * @brief `void` Permet de savoir quelle option a été saisie par l'utilisateur en modifiant la variable correspondante
  * @param args `char **` tableau contenant les mots de la commande
- * @param mask `int *` permet de savoir qu'elle option du myls à été saisie
+ * @param mask `int *` permet de savoir quelles options du myls sont utilisées
  */
 void hasOption(char **args, int *mask)
 {
     int opt;
+
+    printf("getting options\n");
 
     while ((opt = getopt(1, args, "Ra")) != -1)
     {
@@ -135,11 +137,13 @@ void hasOption(char **args, int *mask)
             break;
         }
     }
+
+    printf("final mask is %ls", mask);
 }
 
 /**
  * @brief `void` si la commande saisi par l'utilisateur est myls, l'exécute
- * @param mask `int *` permet de savoir qu'elle option du myls à été saisie
+ * @param mask `int *` permet de savoir quelles options du myls sont utilisées
  */
 void is_myls(int *mask)
 {
@@ -169,7 +173,7 @@ void is_myls(int *mask)
 
 /**
  * @brief c'est ici que les execvp sont fait
- * @param mask `int *` permet de savoir qu'elle option du myls à été saisie
+ * @param mask `int *` permet de savoir quelles options du myls sont utilisées
  * @param args `char **` tableau contenant les mots de la commande
  */
 void execute_command(int *mask, char *args[])
