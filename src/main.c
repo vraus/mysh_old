@@ -245,9 +245,9 @@ int main()
                     perror("Error waitpid");
                     exit(1);
                 }
-                if ((strcmp(command[i + 1], "&&") == 0) && WIFEXITED(wstatus))
+                /*if ((strcmp(command[i + 1], "&&") == 0) && WIFEXITED(wstatus))
                 {
-                }
+                }*/
             }
         }
     }
