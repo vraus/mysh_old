@@ -139,6 +139,8 @@ void hasOption(char **args, int *mask)
             break;
         }
     }
+
+    printf("final mask is %d", *mask);
 }
 
 /**
