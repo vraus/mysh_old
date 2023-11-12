@@ -139,8 +139,6 @@ void hasOption(char **args, int *mask)
             break;
         }
     }
-
-    printf("final mask is %d", *mask);
 }
 
 /**
@@ -202,9 +200,8 @@ int main()
     {
         char cwd[1024];
         getcwd(cwd, sizeof(cwd));
-      
-        mask = 0x000; // Remise à 0 du mask
 
+        mask = 0x000; // Remise à 0 du mask
 
         char *project = strstr(cwd, "/mysh");
         if (project != NULL)
