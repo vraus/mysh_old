@@ -93,7 +93,7 @@ void tokenize(char *str, char *commands[], int *command_count)
             {
                 str[j - 1] = '\0';
             }
-            handle_error_noexit("&&: tokenize");
+            // handle_error_noexit("&&: tokenize");
         }
         if (str[j] == ';' || (str[j - 1] == '&' && str[j] != '&'))
         {
@@ -106,7 +106,6 @@ void tokenize(char *str, char *commands[], int *command_count)
         }
     }
     *command_count = i;
-    printf("c : %d\n", *command_count);
     commands[i] = NULL;
 }
 
@@ -203,7 +202,9 @@ int main()
     {
         char cwd[1024];
         getcwd(cwd, sizeof(cwd));
+      
         mask = 0x000; // Remise à 0 du mask
+
 
         char *project = strstr(cwd, "/mysh");
         if (project != NULL)
@@ -212,7 +213,6 @@ int main()
             printf(GREEN " > ");
 
         // Lire la commande de l'utilisateur
-        // int hasA = 0, hasR = 0, hasMyLs = 0;
         getcommand(input);
         if (strcmp(input, "exit") == 0)
         {
@@ -222,25 +222,33 @@ int main()
         tokenize(input, command, &command_count);
 
         pid_t child_pids[command_count];
-
         for (int i = 0; i < command_count; i++)
         {
-            printf("%s\n", command[i]);
-            child_pids[i] = fork();
-            if (child_pids[i] == -1)
+            if (strcmp(command[i], "&&") == 0 || strcmp(command[i], "&") == 0)
             {
-                perror("fork");
-                exit(1);
+                continue;
             }
-            if (child_pids[i] == 0)
+            else
             {
-                tokenize_space(command[i], args);
-                execute_command(&mask, args);
-            }
-            if (waitpid(child_pids[i], &wstatus, 0) < 0)
-            {
-                perror("Error waitpid");
-                exit(1);
+                child_pids[i] = fork();
+                if (child_pids[i] == -1)
+                {
+                    perror("fork");
+                    exit(1);
+                }
+                if (child_pids[i] == 0)
+                {
+                    tokenize_space(command[i], args);
+                    execute_command(&mask, args);
+                }
+                if (waitpid(child_pids[i], &wstatus, 0) < 0)
+                {
+                    perror("Error waitpid");
+                    exit(1);
+                }
+                if ((strcmp(command[i + 1], "&&") == 0) && WIFEXITED(wstatus))
+                {
+                }
             }
         }
     }
