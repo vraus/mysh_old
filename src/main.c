@@ -118,13 +118,14 @@ void tokenize(char *str, char *commands[], int *command_count)
 void hasOption(char **args, int *mask)
 {
     int opt;
+    int argc = 0;
 
-    printf("getting options\n");
+    for (int i = 0; args[i] != NULL; i++)
+        argc++;
 
-    // BUG: The getopt doesn't work and program never enter this while loop.
-    while ((opt = getopt(1, args, "Ra")) != -1)
+    // [x]: I think it works now
+    while ((opt = getopt(argc, args, "Ra")) != -1)
     {
-        printf("opt: %d\n", opt);
         switch (opt)
         {
         case 'a':
@@ -153,8 +154,6 @@ void is_myls(int *mask)
     myls_args[0] = "./option/myls";
 
     int arg_count = 1;
-
-    printf("\nhere\n");
 
     if (*mask & (1 << 0))
     {
