@@ -117,13 +117,14 @@ void tokenize(char *str, char *commands[], int *command_count)
 void hasOption(char **args, int *mask)
 {
     int opt;
+    int argc = 0;
 
-    printf("getting options\n");
+    for (int i = 0; args[i] != NULL; i++)
+        argc++;
 
-    // BUG: The getopt doesn't work and program never enter this while loop.
-    while ((opt = getopt(1, args, "Ra")) != -1)
+    // [x]: I think it works now
+    while ((opt = getopt(argc, args, "Ra")) != -1)
     {
-        printf("opt: %d\n", opt);
         switch (opt)
         {
         case 'a':
@@ -153,11 +154,6 @@ void is_myls(int *mask)
 
     int arg_count = 1;
 
-<<<<<<< HEAD
-    printf("\nhere\n");
-
-=======
->>>>>>> acefa9a (:rocket: fix bug &&)
     if (*mask & (1 << 0))
     {
         myls_args[arg_count++] = "-a";
@@ -206,11 +202,9 @@ int main()
     {
         char cwd[1024];
         getcwd(cwd, sizeof(cwd));
-<<<<<<< HEAD
+      
         mask = 0x000; // Remise à 0 du mask
-=======
-        mask = 0; // Remise à 0 du mask
->>>>>>> acefa9a (:rocket: fix bug &&)
+
 
         char *project = strstr(cwd, "/mysh");
         if (project != NULL)
