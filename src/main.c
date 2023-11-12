@@ -32,6 +32,19 @@
         perror(msg);             \
     } while (0)
 
+#define handle_error(msg, status) \
+    do                            \
+    {                             \
+        perror(msg);              \
+        exit(status);             \
+    } while (0)
+
+#define handle_error_noexit(msg) \
+    do                           \
+    {                            \
+        perror(msg);             \
+    } while (0)
+
 /**
  * @brief `void` Récupère la commande saisie par l'utilisateur
  * @param str `char *`la commande
@@ -93,7 +106,7 @@ void tokenize(char *str, char *commands[], int *command_count)
             {
                 str[j - 1] = '\0';
             }
-            // handle_error_noexit("&&: tokenize");
+            handle_error_noexit("&&: tokenize");
         }
         if (str[j] == ';' || (str[j - 1] == '&' && str[j] != '&'))
         {
@@ -106,6 +119,7 @@ void tokenize(char *str, char *commands[], int *command_count)
         }
     }
     *command_count = i;
+    printf("c : %d\n", *command_count);
     commands[i] = NULL;
 }
 
@@ -122,9 +136,12 @@ void hasOption(char **args, int *mask)
     for (int i = 0; args[i] != NULL; i++)
         argc++;
 
-    // [x]: I think it works now
-    while ((opt = getopt(argc, args, "Ra")) != -1)
+    printf("getting options\n");
+
+    // BUG: The getopt doesn't work and program never enter this while loop.
+    while ((opt = getopt(1, args, "Ra")) != -1)
     {
+        printf("opt: %d\n", opt);
         switch (opt)
         {
         case 'a':
@@ -160,9 +177,10 @@ void is_myls(int *mask)
     }
 
     if (*mask & (1 << 1))
-    {
-        myls_args[arg_count++] = "-R";
-    }
+        if (*mask & (1 << 1))
+        {
+            myls_args[arg_count++] = "-R";
+        }
 
     myls_args[arg_count] = NULL;
 
@@ -202,7 +220,6 @@ int main()
     {
         char cwd[1024];
         getcwd(cwd, sizeof(cwd));
-
         mask = 0x000; // Remise à 0 du mask
 
         char *project = strstr(cwd, "/mysh");
